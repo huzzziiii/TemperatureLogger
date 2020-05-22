@@ -1,0 +1,9 @@
+stm32f4xx_hal_usart.c:13:10:GetPCLK	24	static
+stm32f4xx_hal_usart.c:49:13:USART_EnablePeripheralClk	16	static
+stm32f4xx_hal_usart.c:69:13:USART_TransmitData	4	static
+stm32f4xx_hal_usart.c:79:13:USART_RxData	16	static
+stm32f4xx_hal_usart.c:92:6:USART2_IRQHandler	8	static
+stm32f4xx_hal_usart.c:144:6:USART_Initization	40	static
+stm32f4xx_hal_usart.c:210:13:USART_CloseTransmission	4	static
+stm32f4xx_hal_usart.c:225:13:USART_EnableCtrlBits	4	static
+stm32f4xx_hal_usart.c:231:13:USART_ClearCtrlBits	4	static

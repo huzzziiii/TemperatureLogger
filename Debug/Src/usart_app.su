@@ -1,0 +1,5 @@
+usart_app.c:14:6:SendSerialData	44	dynamic
+usart_app.c:32:6:ReceiveSerialData	16	static
+usart_app.c:44:6:ParseSerialData	40	static
+usart_app.c:64:6:ExecuteSerialData	24	static
+usart_app.c:92:6:StartSerialSession	48	static
