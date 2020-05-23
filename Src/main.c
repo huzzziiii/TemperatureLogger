@@ -21,10 +21,10 @@ DMA_Handle_t dma_usart_rx, dma_usart_tx;
 //const uint8_t bytesToRead = 2;	// 1 data sample
 
 /* defining buffer information for I2C */
-static uint8_t txBuffer[1] = {MCP9808_REG_AMBIENT_TEMP_REG}; // the register that contains ambient temperature values
 #define bytesToRead 2						// macro since you "const" is ready-only in C and not constant
-uint8_t i2c_rxBuffer[bytesToRead];
-static uint8_t txSize = sizeof(txBuffer)/sizeof(txBuffer[0]);
+static uint8_t I2C_txBuffer[1] = {MCP9808_REG_AMBIENT_TEMP_REG}; // the register that contains ambient temperature values
+static uint8_t I2C_rxBuffer[bytesToRead];
+static uint8_t txSize = sizeof(I2C_txBuffer)/sizeof(I2C_txBuffer[0]);
 
 /* defining buffer for USART */
 char usart_rxBuffer[20] = {0};
@@ -47,12 +47,11 @@ void I2C_Initilization(void)
 	I2C1_handle.I2C_Config.I2C_DeviceAddress = MCP9808_ADDR;
 	I2C1_handle.I2C_Config.I2C_FMDutyCycle = I2C_FM_DUTY_2;
 
-	// set user configurable members
-	I2C1_handle.txBuffer = txBuffer;
-	I2C1_handle.txBufferLength = txSize;
-	I2C1_handle.pRxBuffer = i2c_rxBuffer;
-	I2C1_handle.rxStartIndex = 0;
-	I2C1_handle.rxBufferLength = BYTES_PER_TRANSACTION;
+//	// set user configurable members
+	I2C1_handle.txBuffer = I2C_txBuffer;
+//	I2C1_handle.txBufferLength = txSize;
+	I2C1_handle.pRxBuffer = I2C_rxBuffer;
+//	I2C1_handle.rxBufferLength = BYTES_PER_TRANSACTION;
 	I2C1_handle.rxBufferSize = bytesToRead;
 
 	I2C_Init(&I2C1_handle);
@@ -93,18 +92,21 @@ void DMA_Init(DMA_Handle_t *dmaHandle, DMA_Stream_TypeDef *stream, byte transfer
 }
 
 
-uint16_t GetTemperature(uint8_t interrupt)
+uint16_t GetTemperature_TEST(uint8_t interrupt)
 {
 	printf ("Reading %d bytes\n", bytesToRead);
 	uint16_t temperature;
 
+	I2C1_handle.txBufferLength = txSize;
+	I2C1_handle.rxBufferLength = BYTES_PER_TRANSACTION;
+
 	if (interrupt == SET)
 	{
-		temperature = ReadTemperatureInterrupt(&I2C1_handle);
+		temperature = _ReadTemperatureInterrupt(&I2C1_handle);
 	}
 	else
 	{
-		ReadTemperature(&I2C1_handle, bytesToRead);
+//		_ReadTemperature(&I2C1_handle, bytesToRead);
 	}
 	return temperature;
 }
@@ -128,10 +130,23 @@ int main(void)
 
     /* Initialize USART struct */
     USART_Init();
+    /* Initialize DMA struct */
+//    DMA_Init(&dma_usart_tx, DMA_UART_TX_STREAM, MEMORY_TO_PERIPHERAL);
+//    DMA_Init(&dma_usart_rx, DMA_UART_RX_STREAM, PERIPHERAL_TO_MEMORY);
+//
+//    __HAL_LINKDMA(&usart, dmaRx, dma_usart_rx);
+//    __HAL_LINKDMA(&usart, dmaTx, dma_usart_tx);
 
-    StartSerialSession (&USART2_handle, usart_rxBuffer, rxLength);
+//    DMA_Start_IT(&dma_usart_tx, (uint32_t) tx_buff, &usart.pUSARTx->DR);
+//    DMA_Start_IT(&dma_usart_rx, &usart.pUSARTx->DR, (uint32_t) rx_buff);
 
-//    StartSerialSession (&USART2_handle, usart_rxBuffer, rxLength, &I2C1_handle);
+
+//    while(1)
+//    {
+//		uint16_t temp = GetTemperature_TEST(SET);
+//		SendSerialData(&USART2_handle, "Current temperature: %d\n", temp);
+//    }
+    StartSerialSession (&USART2_handle, usart_rxBuffer, rxLength, &I2C1_handle, txSize, BYTES_PER_TRANSACTION);
 
 	while (1);
 
@@ -252,6 +267,7 @@ static void MX_GPIO_Init(void)
   */
 void Error_Handler(void)
 {
+
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
 

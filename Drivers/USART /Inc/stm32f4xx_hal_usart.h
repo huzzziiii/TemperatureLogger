@@ -1,16 +1,16 @@
 /*
  * stm32f4xx_hal_usart.h
  */
+#ifndef USART__INC_STM32F4XX_HAL_USART_H_
+#define USART__INC_STM32F4XX_HAL_USART_H_
+
 #include <stdint.h>
 #include <string.h>
 #include "stdbool.h"
-#include "../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xe.h"
 #include "../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
 #include "../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h"
+#include "stm32f4xx_dma.h"
 
-
-#ifndef USART__INC_STM32F4XX_HAL_USART_H_
-#define USART__INC_STM32F4XX_HAL_USART_H_
 /*
  * USART mode
  */
@@ -71,11 +71,6 @@ typedef enum {
 	USART_BAUD_256000 = 256000
 } USART_BaudRates;
 
-
-/*
- * --------- USART structures ---------
- */
-
 /*
  * @ USART states for interrupt
  */
@@ -87,7 +82,9 @@ typedef enum {
 	USART_ERROR
 } USART_State;
 
-// user-defined struct
+/*
+ * @ user-defined struct
+ */
 typedef struct {
 	uint8_t USART_parityControl;
 	uint16_t USART_baudRate;
@@ -98,6 +95,9 @@ typedef struct {
 } USART_Config_t;
 
 
+/*
+ * --------- USART structures ---------
+ */
 typedef struct {
 	USART_TypeDef *pUSARTx;
 	USART_Config_t USART_Config;
@@ -109,6 +109,8 @@ typedef struct {
 	uint8_t rxSize;
 	uint8_t dmaTransfer;
 	uint8_t dmaReception;
+	DMA_Handle_t *dmaRx;
+	DMA_Handle_t *dmaTx;
 } USART_Handle_t;
 
 

@@ -85,6 +85,7 @@
 #define HAL_FLASH_MODULE_ENABLED
 #define HAL_PWR_MODULE_ENABLED
 #define HAL_CORTEX_MODULE_ENABLED
+#define USART_APP_MODULE_ENABLED
 
 /* ########################## HSE/HSI Values adaptation ##################### */
 /**
@@ -227,6 +228,19 @@
 /**
   * @brief Include module's header file 
   */
+
+//
+//#ifdef __MCP9808_H
+//	#include "mcp9808.h"
+//#endif
+//
+//#ifdef USART__INC_STM32F4XX_HAL_USART_H_
+//	#include "stm32f4xx_hal_usart.h"
+//#endif
+
+//#ifdef USART_APP_MODULE_ENABLED
+//	#include "usart_app.h"
+//#endif
 
 #ifdef HAL_RCC_MODULE_ENABLED
   #include "stm32f4xx_hal_rcc.h"

@@ -30,7 +30,6 @@ Src/main.o: ../Src/main.c \
  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xe.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/usart_app.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/USART\ /Inc/stm32f4xx_hal_usart.h \
- /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xe.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/DMA/Inc/stm32f4xx_dma.h \
@@ -105,8 +104,6 @@ Src/main.o: ../Src/main.c \
 /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/usart_app.h:
 
 /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/USART\ /Inc/stm32f4xx_hal_usart.h:
-
-/Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xe.h:
 
 /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 

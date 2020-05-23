@@ -43,6 +43,11 @@
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
+#include "main.h"
+#include "stm32f4xx_it.h"
+
+//extern DMA_Handle_t *dmaHandle;
+extern DMA_Handle_t dma_usart_rx, dma_usart_tx;
 
 /* USER CODE END EM */
 

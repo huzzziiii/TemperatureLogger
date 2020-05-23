@@ -146,17 +146,19 @@ static void I2C_ControlAcking(I2C_TypeDef *pI2Cx, uint8_t enable)
  * @HAL_I2C_StartInterrupt: Generates the START condition and enables I2C control bits
  * usage: called to "enable" I2C transaction via interrupts
  */
-I2C_State HAL_I2C_StartInterrupt(I2C_State expectedState)
+I2C_State HAL_I2C_StartInterrupt(I2C_State expectedState, uint8_t txSize, uint8_t rxSize)
 {
 	char *command = expectedState == I2C_TX_BUSY ? "TXing...\n" : "RXing...\n";
 
 	if (I2C_handle_p->I2C_State == I2C_INIT)
 	{
-//		printf ("%s", command);
-
 		// set transaction state
 		I2C_handle_p->I2C_State = expectedState;
 
+		I2C_handle_p->txBufferLength = txSize;
+		I2C_handle_p->rxBufferLength = rxSize;
+
+		// generate start condition
 		I2C_GenerateStartCondition(I2C_handle_p);
 
 		// enable i2c control bits
@@ -164,7 +166,6 @@ I2C_State HAL_I2C_StartInterrupt(I2C_State expectedState)
 	}
 	return I2C_handle_p->I2C_State;
 }
-
 
 /*
  * I2C1_EV_IRQHandler: Interrupt handler for I2C
@@ -406,7 +407,7 @@ void HAL_I2C_Master_Receive (I2C_Handle_t *I2C_handle, uint8_t *rxBuffer, uint8_
 		case 1:
 			I2C_ControlAcking(I2C_handle->pI2Cx, RESET);	// disable ACK
 			I2C_ClearADDRFlag(I2C_handle->pI2Cx);			// clear ADDR flag
-			I2C_GenerateStopCondition(I2C_handle);				// generate STOP condition
+			I2C_GenerateStopCondition(I2C_handle);			// generate STOP condition
 			break;
 
 		case 2:
@@ -515,7 +516,10 @@ static void I2C_StopTransmission(void)
 
 	// restore struct
 	I2C_handle_p->I2C_State = I2C_READY;
-	I2C_handle_p->rxBufferLength = BYTES_PER_TRANSACTION;
+//	I2C_handle_p->rxBufferLength = BYTES_PER_TRANSACTION;
+
+	I2C_handle_p->rxStartIndex = 0;
+//	I2C_handle_p->txBufferLength = I2C
 }
 
 /*

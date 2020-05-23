@@ -19,8 +19,9 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "main.h"
 #include "stm32f4xx_it.h"
+
+//DMA_Handle_t *dmaHandle;
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 /* USER CODE END Includes */
@@ -176,16 +177,29 @@ void PendSV_Handler(void)
   /* USER CODE END PendSV_IRQn 1 */
 }
 
-void EXTI15_10_IRQHandler(void)
+
+
+void DMA1_Stream5_IRQHandler(void)
 {
-	if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_13))
-	{
-		__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_13);
-		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-	}
-
-
+	DMA_InterruptHandler(&dma_usart_rx);
 }
+
+void DMA1_Stream6_IRQHandler(void)
+{
+	DMA_InterruptHandler(&dma_usart_tx);
+}
+
+//
+//void EXTI15_10_IRQHandler(void)
+//{
+//	if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_13))
+//	{
+//		__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_13);
+//		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+//	}
+//
+//
+//}
 /**
   * @brief This function handles System tick timer.
   */

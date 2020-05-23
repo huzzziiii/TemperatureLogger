@@ -37,6 +37,8 @@ extern "C" {
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "stm32f4xx_dma.h"
+
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */

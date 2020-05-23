@@ -1,3 +1,4 @@
-mcp9808.c:6:10:ProcessData	24	static
-mcp9808.c:31:10:ReadTemperatureInterrupt	24	static
-mcp9808.c:58:6:ReadTemperature	56	dynamic
+mcp9808.c:10:10:ProcessData	24	static
+mcp9808.c:35:10:_ReadTemperatureInterrupt	24	static
+mcp9808.c:56:6:_ReadTemperature	56	dynamic
+mcp9808.c:87:10:GetTemperature	24	static

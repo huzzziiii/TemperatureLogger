@@ -1,4 +1,5 @@
-stm32f4xx_dma.c:11:13:DMA_EnablePeripheralClk	16	static
-stm32f4xx_dma.c:26:6:DMA_Initialization	16	static
-stm32f4xx_dma.c:84:6:DMA_EnableInterrupts	16	static
-stm32f4xx_dma.c:100:6:DMA1_Stream6_IRQHandler	4	static
+stm32f4xx_dma.c:12:13:DMA_EnablePeripheralClk	16	static
+stm32f4xx_dma.c:27:6:DMA_Initialization	16	static
+stm32f4xx_dma.c:69:6:DMA_SetConfig	24	static
+stm32f4xx_dma.c:88:19:DMA_Start_IT	24	static
+stm32f4xx_dma.c:114:6:DMA_InterruptHandler	16	static

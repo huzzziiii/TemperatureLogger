@@ -1,11 +1,15 @@
 
 #include <mcp9808.h>
+ /* Function definitions ------------------------------------------------------------------*/
+static void _ReadTemperature(I2C_Handle_t *I2C_handle, const uint8_t bytesToRead);
+uint16_t _ReadTemperatureInterrupt(I2C_Handle_t *I2C_handle, uint8_t txSize, uint8_t rxSize);
+static const uint8_t bytesToRead = 2; // todo rmv
 /*
  * @ProcessData: Converts raw bytes into readable data
  */
 uint16_t ProcessData (uint8_t *rxBuffer) {
 	uint8_t startIndex = 0;
-	printf ("\nUpper byte: %d, Lower byte: %d\n", rxBuffer[startIndex], rxBuffer[startIndex+1]);
+	//printf ("\nUpper byte: %d, Lower byte: %d\n", rxBuffer[startIndex], rxBuffer[startIndex+1]);
 	uint16_t temperatureInDegrees;
 
 	// process data
@@ -21,17 +25,17 @@ uint16_t ProcessData (uint8_t *rxBuffer) {
 	{
 		temperatureInDegrees = upperByte << 4 | rxBuffer[startIndex+1] >> 4;
 	}
-	printf ("Temperature value: %d\n\n", temperatureInDegrees);
+//	printf ("Temperature value: %d\n\n", temperatureInDegrees);
 	return temperatureInDegrees;
 }
 
 /*
  * @ReadTemperatureInterrupt: Reads temperature values via I2C using interrupts
  */
-uint16_t ReadTemperatureInterrupt(I2C_Handle_t *I2C_handle)
+uint16_t _ReadTemperatureInterrupt(I2C_Handle_t *I2C_handle, uint8_t txSize, uint8_t rxSize)
 {
 	// Start I2C transaction
-	while (HAL_I2C_StartInterrupt(I2C_TX_BUSY) != I2C_READY);
+	while (HAL_I2C_StartInterrupt(I2C_TX_BUSY, txSize, rxSize) != I2C_READY);
 
 	I2C_handle->I2C_State = I2C_INIT;
 
@@ -39,23 +43,17 @@ uint16_t ReadTemperatureInterrupt(I2C_Handle_t *I2C_handle)
 	for (int i = 0; i < I2C_handle->rxBufferSize/2; i++)
 	{
 		I2C_handle->I2C_State = I2C_INIT;
-		while (HAL_I2C_StartInterrupt(I2C_RX_BUSY) != I2C_READY);
+		while (HAL_I2C_StartInterrupt(I2C_RX_BUSY, txSize, rxSize) != I2C_READY);
 	}
 
 	uint16_t temperature = ProcessData(I2C_handle->pRxBuffer);
 	return temperature;
-
-//	for (int i = 0; i < I2C_handle->rxBufferSize; i+=2)
-//	{
-////		printf ("%d, %d\n", I2C_handle->pRxBuffer[i], I2C_handle->pRxBuffer[i+1]);
-//		ProcessData(I2C_handle->pRxBuffer, i);
-//	}
 }
 
 /*
  * @ReadTemperature: Read temperature via I2C using polling approach
  */
-void ReadTemperature(I2C_Handle_t *I2C_handle, const uint8_t bytesToRead)
+void _ReadTemperature(I2C_Handle_t *I2C_handle, const uint8_t bytesToRead)
 {
 	// todo - maybe use the following data straight from I2C_handle
 	uint8_t txBuffer[1] = {MCP9808_REG_AMBIENT_TEMP_REG};
@@ -74,17 +72,29 @@ void ReadTemperature(I2C_Handle_t *I2C_handle, const uint8_t bytesToRead)
 
 		for (int j=0; j<bytesToRead; j++)
 		{
-			printf ("%d\n", rxBuffer[j]);
+//			printf ("%d\n", rxBuffer[j]);
 		}
 	}
 
-	printf ("Printing raw bytes:\n");
+//	printf ("Printing raw bytes:\n");
 	for (int i = 0; i < bytesToRead; i+=2)
 	{
-		printf ("%d,%d\n", rxBuffer[i], rxBuffer[i+1]);
+//		printf ("%d,%d\n", rxBuffer[i], rxBuffer[i+1]);
 		ProcessData(rxBuffer);
 	}
+}
 
-//	ProcessData(rxBuffer, 0);
+uint16_t GetTemperature(uint8_t interrupt, I2C_Handle_t *I2C_Handle, uint8_t I2C_txSize, uint8_t I2C_rxSize)
+{
+	uint16_t temperature;
 
+	if (interrupt == SET)
+	{
+		temperature = _ReadTemperatureInterrupt(I2C_Handle, I2C_txSize, I2C_rxSize);
+	}
+	else
+	{
+		_ReadTemperature(I2C_Handle, bytesToRead);
+	}
+	return temperature;
 }

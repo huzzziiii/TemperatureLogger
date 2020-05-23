@@ -1,8 +1,8 @@
 /*
  * stm32f4fxx_hal_usart.c
  */
-#include "../Inc/stm32f4xx_hal_usart.h"
-
+//#include "../Inc/stm32f4xx_hal_usart.h"
+#include "stm32f4xx_hal_usart.h"
 /*
  * Static variables
  */
@@ -25,19 +25,22 @@ uint32_t GetPCLK(USART_TypeDef *pUSARTx)
 }
 
 /*
- * USART initialization and deinitialization
- */
-static void USART_Deinit(USART_Handle_t *pUSART); // todo maybe remove
-
-/*
  * Function declarations
  */
+static void USART_Deinit(USART_Handle_t *pUSART); // todo maybe remove
+static void UART_DMA_TxCplt(DMA_Handle_t *dmaHandle);
+static void UART_DMA_HalfTxCplt(DMA_Handle_t *dmaHandle);
+static void UART_DMA_TxError(DMA_Handle_t *dmaHandle);
+static void UART_DMA_RxCplt(DMA_Handle_t *dmaHandle);
+static void UART_DMA_HalfRxCplt(DMA_Handle_t *dmaHandle);
+static void UART_DMA_RxError(DMA_Handle_t *dmaHandle);
+
 static void USART_EnablePeripheralClk(USART_TypeDef *pUSARTx);
 static void USART_EnableCtrlBits(void);
 static void USART_ClearCtrlBits(void);
 static void USART_CloseTransmission(void);
 static void USART_ClearCtrlBits(void);
-static void USART_TXE(void);
+//static void USART_TXE(void);
 
 /*
  * Interrupt handlers --- TODO ***
@@ -86,6 +89,47 @@ USART_State USART_RxData(USART_State desiredState)
 	return ptrUSARTx->USART_State;
 }
 
+USART_State USART_DMA_Transmit(USART_Handle_t *usartHandle, byte bufferSize)
+{
+	if (usartHandle->USART_State != USART_TX_BUSY)
+	{
+		usartHandle->USART_State = USART_TX_BUSY;
+
+		// set callbacks
+		usartHandle->dmaTx->XferCplCallback = &UART_DMA_TxCplt;
+		usartHandle->dmaTx->HalfXferCplCallback = &UART_DMA_HalfTxCplt;
+		usartHandle->dmaTx->XferErrorCallback = &UART_DMA_TxError;
+
+		// start DMA
+		uint32_t dstAddress = (uint32_t) &usartHandle->pUSARTx->DR;
+		uint32_t srcAddress = (uint32_t) usartHandle->txBuffer;
+		DMA_Start_IT(usartHandle->dmaTx, srcAddress, dstAddress, bufferSize);
+		return HAL_OK;
+	}
+	return HAL_ERROR;
+}
+
+USART_State USART_DMA_Receive(USART_Handle_t *usartHandle, byte bufferSize)
+{
+	if (usartHandle->USART_State != USART_RX_BUSY)
+	{
+		usartHandle->USART_State = USART_RX_BUSY;
+
+
+		// set callbacks
+		usartHandle->dmaRx->XferCplCallback = &UART_DMA_RxCplt;
+		usartHandle->dmaRx->HalfXferCplCallback = &UART_DMA_HalfRxCplt;
+		usartHandle->dmaRx->XferErrorCallback = &UART_DMA_RxError;
+
+		// start DMA
+		uint32_t srcAddress = (uint32_t) &usartHandle->pUSARTx->DR;
+		uint32_t dstAddress = (uint32_t) usartHandle->rxBuffer;
+		DMA_Start_IT(usartHandle->dmaRx, srcAddress, dstAddress, bufferSize);
+		return HAL_OK;
+	}
+	return HAL_ERROR;
+}
+
 /*
  * @USART2_IRQHandler: IRQ handler for servicing USART2 interrupts
  */
@@ -99,7 +143,7 @@ void USART2_IRQHandler(void)
 		if (ptrUSARTx->USART_State == USART_TX_BUSY)
 		{
 			// TXE
-			if (ptrUSARTx->txLength)
+			if (ptrUSARTx->txLength)		// if there is stuff to send...
 			{
 				ptrUSARTx->pUSARTx->DR = *ptrUSARTx->txBuffer++; // send to serial
 				ptrUSARTx->txLength--;
@@ -206,6 +250,33 @@ void USART_Initization(USART_Handle_t *pUSART)
 
 }
 
+
+static void UART_DMA_TxCplt(DMA_Handle_t *dmaHandle)
+{
+
+}
+
+static void UART_DMA_HalfTxCplt(DMA_Handle_t *dmaHandle)
+{
+
+}
+
+static void UART_DMA_TxError(DMA_Handle_t *dmaHandle)
+{
+
+}
+
+static void UART_DMA_HalfRxCplt(DMA_Handle_t *dmaHandle)
+{
+
+}
+
+static void UART_DMA_RxCplt(DMA_Handle_t *dmaHandle)
+{
+
+}
+
+static void UART_DMA_RxError(DMA_Handle_t *dmaHandle) {}
 
 static void USART_CloseTransmission()
 {

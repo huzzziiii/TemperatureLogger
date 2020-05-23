@@ -1,6 +1,9 @@
 /*
  * stm32f4xx_hal_i2c.h
  */
+#ifndef __STM32F4xx_HAL_I2C
+#define __STM32F4xx_HAL_I2C
+
 #include "stm32f401xe.h"
 #include "stm32f4xx_hal.h"
 
@@ -43,7 +46,7 @@ typedef struct {
 	uint8_t rxBufferSize;
 	uint8_t txBufferLength;
 	uint8_t rxBufferLength;
-}I2C_Handle_t;
+} I2C_Handle_t;
 
 HAL_StatusTypeDef WaitTillTimeout (uint8_t timeout);
 void I2C_PeripheralClkControl(I2C_TypeDef *pI2Cx);
@@ -54,9 +57,7 @@ HAL_StatusTypeDef HAL_I2C_Master_Transmit (I2C_Handle_t *I2C_handle, uint8_t *da
 void HAL_I2C_Master_Receive (I2C_Handle_t *I2C_handle, uint8_t *rxBuffer, uint8_t size, uint8_t startIndex);
 
 // I2C interrupt headers
-I2C_State HAL_MasterTransmitInterrupt(void);
-I2C_State HAL_MasterReceiveInterrupt(void);
-I2C_State HAL_I2C_StartInterrupt(I2C_State expectedState);
+I2C_State HAL_I2C_StartInterrupt(I2C_State expectedState, uint8_t txSize, uint8_t rxSize);
 void I2C_TXE_Interrupt(void);
 void I2C_RXNE_Interrupt(void);
 void StopTransmission (void);
@@ -90,4 +91,5 @@ void StopTransmission (void);
 #define READ 							1
 
 
+#endif
 
