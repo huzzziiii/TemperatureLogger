@@ -1,9 +1,4 @@
-/*
- * stm32f4xx_dma.h
- *
- *  Created on: May 5, 2020
- *      Author: huzaifaasif
- */
+
 
 #ifndef DMA_INC_STM32F4XX_DMA_H_
 #define DMA_INC_STM32F4XX_DMA_H_

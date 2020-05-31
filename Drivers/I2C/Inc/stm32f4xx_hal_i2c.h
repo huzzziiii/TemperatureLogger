@@ -82,8 +82,6 @@ void StopTransmission (void);
 #define I2C_FM_DUTY_2       			0
 #define I2C_FM_DUTY_16_9    			1
 
-#define BYTES_PER_TRANSACTION			2
-
 #define FLAG_SET						1
 #define FLAG_NOT_SET					0
 

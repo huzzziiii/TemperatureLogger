@@ -5,11 +5,12 @@
 #define USART__INC_STM32F4XX_HAL_USART_H_
 
 #include <stdint.h>
-#include <string.h>
+//#include <string.h>
 #include "stdbool.h"
 #include "../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
 #include "../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h"
 #include "stm32f4xx_dma.h"
+
 
 /*
  * USART mode
@@ -79,15 +80,19 @@ typedef enum {
 	USART_READY,
 	USART_RX_BUSY,
 	USART_TX_BUSY,
+	USART_TX_RX_BUSY,
 	USART_ERROR
 } USART_State;
+
+#define USART_ENABLE_INTERRUPTS(_HANDLE_, _REG_) _HANDLE_->CR1 |= _REG_
+#define USART_DISABLE_INTERRUPTS(_HANDLE_, _REG_) _HANDLE_->CR1 &= ~(_REG_)
 
 /*
  * @ user-defined struct
  */
 typedef struct {
 	uint8_t USART_parityControl;
-	uint16_t USART_baudRate;
+	uint32_t USART_baudRate;
 	uint8_t USART_stopBits;
 	uint8_t USART_wordLength;
 	uint8_t USART_mode;
@@ -107,6 +112,7 @@ typedef struct {
 	uint8_t txLength;
 	uint8_t rxLength;
 	uint8_t rxSize;
+	uint8_t rxBufferIdx;
 	uint8_t dmaTransfer;
 	uint8_t dmaReception;
 	DMA_Handle_t *dmaRx;

@@ -155,6 +155,7 @@ I2C_State HAL_I2C_StartInterrupt(I2C_State expectedState, uint8_t txSize, uint8_
 		// set transaction state
 		I2C_handle_p->I2C_State = expectedState;
 
+		// set respective buffer sizes
 		I2C_handle_p->txBufferLength = txSize;
 		I2C_handle_p->rxBufferLength = rxSize;
 
@@ -447,7 +448,6 @@ void HAL_I2C_Master_Receive (I2C_Handle_t *I2C_handle, uint8_t *rxBuffer, uint8_
 				I2C_WaitForCompletion(I2C_handle->pI2Cx, I2C_SR1_BTF);
 
 				I2C_GenerateStopCondition(I2C_handle);
-//				printf ("Start_index: %d\n", startIndex);
 
 //				I2C_handle->pRxBuffer[startIndex++] = (uint8_t) I2C_handle->pI2Cx->DR;
 				rxBuffer[startIndex++] = (uint8_t) I2C_handle->pI2Cx->DR;

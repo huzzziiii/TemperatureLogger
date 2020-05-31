@@ -1,7 +1,6 @@
 /*
  * stm32f4fxx_hal_usart.c
  */
-//#include "../Inc/stm32f4xx_hal_usart.h"
 #include "stm32f4xx_hal_usart.h"
 /*
  * Static variables
@@ -27,7 +26,6 @@ uint32_t GetPCLK(USART_TypeDef *pUSARTx)
 /*
  * Function declarations
  */
-static void USART_Deinit(USART_Handle_t *pUSART); // todo maybe remove
 static void UART_DMA_TxCplt(DMA_Handle_t *dmaHandle);
 static void UART_DMA_HalfTxCplt(DMA_Handle_t *dmaHandle);
 static void UART_DMA_TxError(DMA_Handle_t *dmaHandle);
@@ -74,7 +72,8 @@ USART_State USART_TransmitData(void)
 	if (ptrUSARTx->USART_State != USART_TX_BUSY)
 	{
 		ptrUSARTx->USART_State = USART_TX_BUSY;
-		ptrUSARTx->pUSARTx->CR1 |= (USART_CR1_TXEIE | USART_CR1_TCIE); // set Transmit Data Empty & Transmission Complete control bits
+		USART_ENABLE_INTERRUPTS(ptrUSARTx->pUSARTx, USART_CR1_TXEIE | USART_CR1_TCIE);  // set Transmit Data Empty & Transmission Complete control bits
+
 	}
 	return ptrUSARTx->USART_State;
 }
@@ -84,7 +83,8 @@ USART_State USART_RxData(USART_State desiredState)
 	if (ptrUSARTx->USART_State != desiredState && ptrUSARTx->USART_State != USART_READY)
 	{
 		ptrUSARTx->USART_State = desiredState;
-		ptrUSARTx->pUSARTx->CR1 |= (USART_CR1_RXNEIE | USART_CR1_RE);
+
+		USART_ENABLE_INTERRUPTS(ptrUSARTx->pUSARTx, USART_CR1_RXNEIE | USART_CR1_RE);
 	}
 	return ptrUSARTx->USART_State;
 }
@@ -154,12 +154,12 @@ void USART2_IRQHandler(void)
 	// RXNE
 	if (ptrUSARTx->pUSARTx->SR & USART_SR_RXNE && ptrUSARTx->rxLength)
 	{
-		*ptrUSARTx->rxBuffer = ptrUSARTx->pUSARTx->DR;
-		if (*ptrUSARTx->rxBuffer == '\r')
+		ptrUSARTx->rxBuffer[ptrUSARTx->rxBufferIdx] = ptrUSARTx->pUSARTx->DR;
+		if (ptrUSARTx->rxBuffer[ptrUSARTx->rxBufferIdx++] == '\r')
 		{
 			endLine = true;
 		}
-		ptrUSARTx->rxBuffer++;
+//		ptrUSARTx->rxBuffer++;
 		ptrUSARTx->rxLength--;
 	}
 
@@ -280,17 +280,19 @@ static void UART_DMA_RxError(DMA_Handle_t *dmaHandle) {}
 
 static void USART_CloseTransmission()
 {
-
 	if (ptrUSARTx->USART_State == USART_RX_BUSY)
 	{
-		ptrUSARTx->pUSARTx->CR1 &= ~USART_CR1_RXNEIE;
+		//USART_ApplicationCallback(ptrUSARTx);
+		USART_DISABLE_INTERRUPTS(ptrUSARTx->pUSARTx, USART_CR1_RXNEIE);
+		ptrUSARTx->rxLength = ptrUSARTx->rxSize;	// restoring the original RX size
+		ptrUSARTx->rxBufferIdx = 0;
 	}
 	else if (ptrUSARTx->USART_State == USART_TX_BUSY)
 	{
-		ptrUSARTx->pUSARTx->CR1 &= ~(USART_CR1_TXEIE | USART_CR1_TCIE);
+		USART_DISABLE_INTERRUPTS(ptrUSARTx->pUSARTx, USART_CR1_TXEIE | USART_CR1_TCIE);
 	}
 	ptrUSARTx->USART_State = USART_READY;
-	ptrUSARTx->rxLength = ptrUSARTx->rxSize;	// restoring the original RX size
+
 }
 
 static void USART_EnableCtrlBits(void)

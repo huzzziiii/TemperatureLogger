@@ -31,13 +31,12 @@ extern "C" {
 #include "stm32f4xx_hal.h"
 #include "mcp9808.h"
 #include "usart_app.h"
-#include "stm32f4xx_dma.h"
+//#include "stm32f4xx_dma.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include "stm32f4xx_dma.h"
 
 
 /* Private includes ----------------------------------------------------------*/

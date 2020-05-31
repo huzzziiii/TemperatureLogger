@@ -16,21 +16,10 @@ USART_Handle_t USART2_handle;
 I2C_Handle_t I2C1_handle;
 DMA_Handle_t dma_usart_rx, dma_usart_tx;
 
-
-//const int bytesToRead = 6;		// 3 data samples
-//const uint8_t bytesToRead = 2;	// 1 data sample
-
-/* defining buffer information for I2C */
-#define bytesToRead 2						// macro since you "const" is ready-only in C and not constant
-static uint8_t I2C_txBuffer[1] = {MCP9808_REG_AMBIENT_TEMP_REG}; // the register that contains ambient temperature values
-static uint8_t I2C_rxBuffer[bytesToRead];
-static uint8_t txSize = sizeof(I2C_txBuffer)/sizeof(I2C_txBuffer[0]);
-
 /* defining buffer for USART */
 char usart_rxBuffer[20] = {0};
 char *tempPtr = usart_rxBuffer;
-uint8_t rxLength = sizeof(usart_rxBuffer)/sizeof(usart_rxBuffer[0]);
-char *prevIndex = usart_rxBuffer;
+uint8_t usart_rxLength = sizeof(usart_rxBuffer)/sizeof(usart_rxBuffer[0]);
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
@@ -39,21 +28,10 @@ static void MX_GPIO_Init(void);
 /*
  * Initializing user-defined variables for I2C struct
  */
-void I2C_Initilization(void)
+void I2C_Initilization(I2C_Config_t *I2C_Config, I2C_TypeDef *i2cPeripheral)
 {
-	I2C1_handle.pI2Cx = I2C1;
-	I2C1_handle.I2C_Config.I2C_AckControl = I2C_ACK_ENABLE;
-	I2C1_handle.I2C_Config.I2C_SCLSpeed = I2C_SCL_SPEED_SM;
-	I2C1_handle.I2C_Config.I2C_DeviceAddress = MCP9808_ADDR;
-	I2C1_handle.I2C_Config.I2C_FMDutyCycle = I2C_FM_DUTY_2;
-
-//	// set user configurable members
-	I2C1_handle.txBuffer = I2C_txBuffer;
-//	I2C1_handle.txBufferLength = txSize;
-	I2C1_handle.pRxBuffer = I2C_rxBuffer;
-//	I2C1_handle.rxBufferLength = BYTES_PER_TRANSACTION;
-	I2C1_handle.rxBufferSize = bytesToRead;
-
+	I2C1_handle.pI2Cx = i2cPeripheral;
+	I2C1_handle.I2C_Config = *I2C_Config;
 	I2C_Init(&I2C1_handle);
 }
 
@@ -66,8 +44,9 @@ void USART_Init (void)
 	USART2_handle.USART_Config.USART_stopBits = USART_STOP;
 	USART2_handle.USART_Config.USART_wordLength = USART_8_DATA_BITS;
 	USART2_handle.rxBuffer = usart_rxBuffer;
-	USART2_handle.rxLength = rxLength;
-	USART2_handle.rxSize = rxLength;
+	USART2_handle.rxLength = usart_rxLength;
+	USART2_handle.rxSize = usart_rxLength;
+	USART2_handle.rxBufferIdx = 0;
 	USART2_handle.dmaTransfer = DMA_TX_DISABLE;
 	USART2_handle.dmaReception = DMA_RX_DISABLE;
 
@@ -91,26 +70,6 @@ void DMA_Init(DMA_Handle_t *dmaHandle, DMA_Stream_TypeDef *stream, byte transfer
 	DMA_Initialization(dmaHandle);
 }
 
-
-uint16_t GetTemperature_TEST(uint8_t interrupt)
-{
-	printf ("Reading %d bytes\n", bytesToRead);
-	uint16_t temperature;
-
-	I2C1_handle.txBufferLength = txSize;
-	I2C1_handle.rxBufferLength = BYTES_PER_TRANSACTION;
-
-	if (interrupt == SET)
-	{
-		temperature = _ReadTemperatureInterrupt(&I2C1_handle);
-	}
-	else
-	{
-//		_ReadTemperature(&I2C1_handle, bytesToRead);
-	}
-	return temperature;
-}
-
 /**
   * @brief  The application entry point.
   * @retval int
@@ -126,10 +85,18 @@ int main(void)
 	MX_GPIO_Init();
 
 	/* Initialize I2C struct */
-    I2C_Initilization();
+	I2C_Config_t i2c_config = {
+		I2C_AckControl: I2C_ACK_ENABLE,
+		I2C_SCLSpeed: I2C_SCL_SPEED_SM,
+		I2C_DeviceAddress: MCP9808_ADDR,
+		I2C_FMDutyCycle: I2C_FM_DUTY_2
+	};
+    I2C_Initilization(&i2c_config, I2C1);
 
     /* Initialize USART struct */
     USART_Init();
+
+
     /* Initialize DMA struct */
 //    DMA_Init(&dma_usart_tx, DMA_UART_TX_STREAM, MEMORY_TO_PERIPHERAL);
 //    DMA_Init(&dma_usart_rx, DMA_UART_RX_STREAM, PERIPHERAL_TO_MEMORY);
@@ -140,17 +107,13 @@ int main(void)
 //    DMA_Start_IT(&dma_usart_tx, (uint32_t) tx_buff, &usart.pUSARTx->DR);
 //    DMA_Start_IT(&dma_usart_rx, &usart.pUSARTx->DR, (uint32_t) rx_buff);
 
+    StartSerialSession (&USART2_handle, usart_rxLength, &I2C1_handle);
+//    USART_RxData(USART_RX_BUSY);
 
-//    while(1)
-//    {
-//		uint16_t temp = GetTemperature_TEST(SET);
-//		SendSerialData(&USART2_handle, "Current temperature: %d\n", temp);
-//    }
-    StartSerialSession (&USART2_handle, usart_rxBuffer, rxLength, &I2C1_handle, txSize, BYTES_PER_TRANSACTION);
-
-	while (1);
-
+//    USART_ReceiveData(&USART2_handle, &I2C1_handle);
+    while (1);
 }
+
 
 
 /**

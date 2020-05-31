@@ -3,32 +3,6 @@
  */
 #include "usart_app.h"
 
-//void USART_Init (USART_Handle_t *usart,
-//				 USART_BaudRates baud,
-//				 USART_WordLength wordLength,
-//				 USART_Parity parity,
-//				 USART_StopBits stopBits,
-//				 USART_Mode mode,
-//				 char *rxBuffer,
-//				 uint8_t rxLength,
-//				 uint8_t dmaTransfer,
-//				 uint8_t dmaReception)
-//{
-//	usart->pUSARTx = USART2;
-//	usart->USART_Config.USART_baudRate = baud;
-//	usart->USART_Config.USART_mode = mode;
-//	usart->USART_Config.USART_parityControl = parity;
-//	usart->USART_Config.USART_stopBits = stopBits;
-//	usart->USART_Config.USART_wordLength = wordLength;
-//	usart->rxBuffer = rxBuffer;
-//	usart->rxLength = rxLength;
-//	usart->rxSize = rxLength;
-//	usart->dmaTransfer = dmaTransfer;
-//	usart->dmaReception = dmaReception;
-//
-//	USART_Initization(usart);
-//}
-
 /*
  * SendSerialData: Sends serial data to the RX device
  * @param: usart:  pointer to USART structure
@@ -68,10 +42,13 @@ void ReceiveSerialData(USART_Handle_t *usart)
  * @param: usart_rxBuffer:  pointer to rx buffer that stores the user input
  * @return void
  */
-void ParseSerialData(USART_Handle_t *usart, char *tempBuffer, char *rxBuffer) // hello\r\world\r
+void ParseSerialData(USART_Handle_t *usart, char *tempBuffer) // hello\r\world\r
 {
-	char *start = rxBuffer;
-	char *end = strstr(rxBuffer, "\r");
+//	char *start = rxBuffer;
+//	char *end = strstr(rxBuffer, "\r");
+
+	char *start = usart->rxBuffer;
+	char *end = strstr(start, "\r");
 	uint8_t bytes = end - start;
 	memcpy(tempBuffer, start, bytes);
 }
@@ -83,11 +60,11 @@ void ParseSerialData(USART_Handle_t *usart, char *tempBuffer, char *rxBuffer) //
  * @param: I2C_Handle_t: pointer to I2C_Handle_t struct
  * @return false if "q" (quit) is entered, otherwise true
  */
-bool ExecuteSerialData(USART_Handle_t *usart, const char *str1, I2C_Handle_t *I2C_Handle, uint8_t I2C_txSize, uint8_t I2C_rxSize)
+bool ExecuteSerialData(USART_Handle_t *usart, const char *str1, I2C_Handle_t *I2C_Handle)
 {
 	if (!strcmp(str1, "temp"))
 	{
-		uint16_t temp = GetTemperature(SET, I2C_Handle, I2C_txSize, I2C_rxSize);
+		uint16_t temp = GetTemperature(SET, I2C_Handle);
 		SendSerialData(usart, "Current temperature: %d\n", temp);
 	}
 	else if (!strcmp(str1, "led"))
@@ -111,28 +88,57 @@ bool ExecuteSerialData(USART_Handle_t *usart, const char *str1, I2C_Handle_t *I2
  * @param: rxBufferSize: 	size of the rx buffer
  * @return void
  */
-void StartSerialSession (USART_Handle_t *usart, char *usart_rxBuffer, uint8_t rxBufferSize, I2C_Handle_t *I2C_Handle, uint8_t I2C_txBufferLength, uint8_t I2C_rxBufferLength)
+void StartSerialSession (USART_Handle_t *usart, uint8_t rxBufferSize, I2C_Handle_t *I2C_Handle)
 {
 	char tempBuffer[rxBufferSize];
 	memset(tempBuffer, 0, rxBufferSize);
 	while(true)
 	{
 		ReceiveSerialData(usart);
-		ParseSerialData(usart, tempBuffer, usart_rxBuffer);
-		bool status = ExecuteSerialData(usart, tempBuffer, I2C_Handle, I2C_txBufferLength, I2C_rxBufferLength);
+		ParseSerialData(usart, tempBuffer);
+		bool status = ExecuteSerialData(usart, tempBuffer, I2C_Handle);
 		if (!status)		// break if "q" is entered
 		{
 			break;
 		}
 
 		// clear out/reset the buffers
-		usart->rxBuffer = usart_rxBuffer;
-		memset(usart_rxBuffer, 0, sizeof(rxBufferSize));
+//		usart->rxBuffer = usart_rxBuffer;
+//		memset(usart_rxBuffer, 0, sizeof(rxBufferSize));
 		memset(tempBuffer, 0, sizeof(tempBuffer));
 
 		// reset the USART state
 		usart->USART_State = USART_INIT;
 	}
+}
+
+static I2C_Handle_t *i2cHandle;
+void USART_ReceiveData(USART_Handle_t *usart, I2C_Handle_t *i2c)
+{
+	i2cHandle = i2c;
+	USART_RxData(USART_RX_BUSY);
+}
+
+void USART_ProcessingRxData(USART_Handle_t *usart)
+{
+	char tempBuffer[usart->rxSize];
+	memset(tempBuffer, 0, usart->rxSize);
+
+	ParseSerialData(usart, tempBuffer);
+	ExecuteSerialData(usart, tempBuffer, i2cHandle);
+
+	// clear out/reset the buffers
+//	usart->rxBuffer = usart_rxBuffer;
+//	memset(usart_rxBuffer, 0, sizeof(rxBufferSize));
+//	memset(tempBuffer, 0, sizeof(tempBuffer));
+
+	// reset the USART state
+	usart->USART_State = USART_INIT;
+}
+
+void USART_ApplicationCallback(USART_Handle_t *usart)
+{
+	 USART_ProcessingRxData(usart);
 }
 
 
