@@ -25,7 +25,7 @@ void SendSerialData(USART_Handle_t *usart, const char *format, ...)
 
 //	USART_DMA_Transmit(usart, sizeof(serialBuffer));
 //	USART_DMA_Transmit(usartHandle, dmaHandle); //
-	va_end(args);		// clean memory reserved for valist
+	va_end(args);						// clean memory reserved for valist
 //	usart->USART_State = USART_INIT;
 }
 
@@ -117,29 +117,18 @@ void StartSerialSession (USART_Handle_t *usart, uint8_t rxBufferSize, I2C_Handle
 
 void USART_EnableRxInterrupts()
 {
-	(USART_RxData(USART_RX_BUSY));
-//	usart->USART_State = USART_INIT;
+	USART_RxData(USART_RX_BUSY);
 }
 
-// consume circular buffer
+/*
+ * @SerialRead: reads the FIFO that contains the meaningful user input (containing \r)
+ */
 void SerialRead(USART_Handle_t *usart, I2C_Handle_t *I2C_Handle)
 {
 	char token[usart->rxSize];
 	memset(token, 0, usart->rxSize);
 
-	if (USART_RX_BUFFER_EMPTY(usart->rxBuffer)) {
-		return;
-	}
-
-	if (!usart->TxEndOfLineIdx) {
-//		SendSerialData(usart, "No data with end-of-line received yet...\r");
-		return;
-	}
-
-	if (usart->RxEndOfLineIdx == usart->TxEndOfLineIdx) {
-		return;
-	}
-
+	// parse the data
 	char *dataStart = usart->rxBuffer + usart->rxIdx;
 	char *dataEnd = strstr(dataStart, "\r");
 	uint8_t bytes;
@@ -158,6 +147,7 @@ void SerialRead(USART_Handle_t *usart, I2C_Handle_t *I2C_Handle)
 		memcpy(token, dataStart, bytes);
 	}
 
+	// execute the user input request
 	ExecuteSerialData(usart, token, I2C_Handle);
 
 	usart->RxEndOfLineIdx++;

@@ -4,4 +4,4 @@ usart_app.c:48:6:ParseSerialData	32	static
 usart_app.c:66:6:ExecuteSerialData	32	static
 usart_app.c:94:6:StartSerialSession	56	dynamic
 usart_app.c:118:6:USART_EnableRxInterrupts	8	static
-usart_app.c:125:6:SerialRead	48	dynamic
+usart_app.c:126:6:SerialRead	48	dynamic

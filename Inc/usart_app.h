@@ -12,6 +12,7 @@
 void SendSerialData(USART_Handle_t *usart, const char *format, ...);
 void ReceiveSerialData(USART_Handle_t *usart);
 void ParseSerialData(USART_Handle_t *usart, char *tempBuffer);
+void SerialRead(USART_Handle_t *usart, I2C_Handle_t *I2C_Handle);
 void StartSerialSession (USART_Handle_t *usart, uint8_t rxBufferSize, I2C_Handle_t *I2C_Handle);
 void USART_ProcessingRxData(USART_Handle_t *usart);
 void USART_ApplicationCallback(USART_Handle_t *usart);

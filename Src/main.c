@@ -17,16 +17,15 @@ I2C_Handle_t I2C1_handle;
 DMA_Handle_t dma_usart_rx, dma_usart_tx;
 
 /* defining buffer for USART */
-char usart_rxBuffer[9] = {0};
-char *tempPtr = usart_rxBuffer;
-uint8_t usart_rxLength = sizeof(usart_rxBuffer)/sizeof(usart_rxBuffer[0]);
+char usart_fifo[9] = {0};
+uint8_t usart_rxLength = sizeof(usart_fifo)/sizeof(usart_fifo[0]);
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 
 /*
- * Initializing user-defined variables for I2C struct
+ * Initializes user-defined variables for I2C struct
  */
 void I2C_Initilization(I2C_Config_t *I2C_Config, I2C_TypeDef *i2cPeripheral)
 {
@@ -35,6 +34,9 @@ void I2C_Initilization(I2C_Config_t *I2C_Config, I2C_TypeDef *i2cPeripheral)
 	I2C_Init(&I2C1_handle);
 }
 
+/*
+ * Initializes user-defined variables for USART struct
+ */
 void USART_Init (void)
 {
 	USART2_handle.pUSARTx = USART2;
@@ -43,7 +45,7 @@ void USART_Init (void)
 	USART2_handle.USART_Config.USART_parityControl = USART_PARITY_DISABLED;
 	USART2_handle.USART_Config.USART_stopBits = USART_STOP;
 	USART2_handle.USART_Config.USART_wordLength = USART_8_DATA_BITS;
-	USART2_handle.rxBuffer = usart_rxBuffer;
+	USART2_handle.rxBuffer = usart_fifo;
 	USART2_handle.rxLength = usart_rxLength -1;
 	USART2_handle.rxSize = usart_rxLength - 1;
 	USART2_handle.bitMask = usart_rxLength - 2;
@@ -53,6 +55,8 @@ void USART_Init (void)
 	USART2_handle.dmaReception = DMA_RX_DISABLE;
 	USART2_handle.session = SET;
 	USART_Initization(&USART2_handle);
+
+	USART_EnableRxInterrupts();
 }
 
 void DMA_Init(DMA_Handle_t *dmaHandle, DMA_Stream_TypeDef *stream, byte transferDirection)
@@ -109,14 +113,15 @@ int main(void)
 //    DMA_Start_IT(&dma_usart_tx, (uint32_t) tx_buff, &usart.pUSARTx->DR);
 //    DMA_Start_IT(&dma_usart_rx, &usart.pUSARTx->DR, (uint32_t) rx_buff);
 
-//    StartSerialSession (&USART2_handle, usart_rxLength, &I2C1_handle);
-
-
-    USART_EnableRxInterrupts();
-
-    while(1) {
-    	SerialRead(&USART2_handle, &I2C1_handle);
-    	HAL_Delay(2000);
+    while(1)
+    {
+    	uint8_t readFifo = USART_READ_FIFO(USART2_handle.rxBuffer,
+    									   USART2_handle.TxEndOfLineIdx,
+										   USART2_handle.RxEndOfLineIdx);
+    	if (readFifo)
+    	{
+    		SerialRead(&USART2_handle, &I2C1_handle);
+    	}
     }
 }
 
