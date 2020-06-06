@@ -1,8 +1,7 @@
 usart_app.c:13:6:SendSerialData	44	dynamic
-usart_app.c:34:6:ReceiveSerialData	16	static
-usart_app.c:45:6:ParseSerialData	32	static
-usart_app.c:63:6:ExecuteSerialData	32	static
-usart_app.c:91:6:StartSerialSession	56	dynamic
-usart_app.c:116:6:USART_ReceiveData	16	static
-usart_app.c:122:6:USART_ProcessingRxData	32	dynamic
-usart_app.c:139:6:USART_ApplicationCallback	16	static
+usart_app.c:37:6:ReceiveSerialData	16	static
+usart_app.c:48:6:ParseSerialData	32	static
+usart_app.c:66:6:ExecuteSerialData	32	static
+usart_app.c:94:6:StartSerialSession	56	dynamic
+usart_app.c:118:6:USART_EnableRxInterrupts	8	static
+usart_app.c:125:6:SerialRead	48	dynamic

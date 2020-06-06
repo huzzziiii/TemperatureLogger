@@ -17,7 +17,7 @@ I2C_Handle_t I2C1_handle;
 DMA_Handle_t dma_usart_rx, dma_usart_tx;
 
 /* defining buffer for USART */
-char usart_rxBuffer[20] = {0};
+char usart_rxBuffer[9] = {0};
 char *tempPtr = usart_rxBuffer;
 uint8_t usart_rxLength = sizeof(usart_rxBuffer)/sizeof(usart_rxBuffer[0]);
 
@@ -44,12 +44,14 @@ void USART_Init (void)
 	USART2_handle.USART_Config.USART_stopBits = USART_STOP;
 	USART2_handle.USART_Config.USART_wordLength = USART_8_DATA_BITS;
 	USART2_handle.rxBuffer = usart_rxBuffer;
-	USART2_handle.rxLength = usart_rxLength;
-	USART2_handle.rxSize = usart_rxLength;
-	USART2_handle.rxBufferIdx = 0;
+	USART2_handle.rxLength = usart_rxLength -1;
+	USART2_handle.rxSize = usart_rxLength - 1;
+	USART2_handle.bitMask = usart_rxLength - 2;
+	USART2_handle.txIdx = 0;
+	USART2_handle.rxIdx = 0;
 	USART2_handle.dmaTransfer = DMA_TX_DISABLE;
 	USART2_handle.dmaReception = DMA_RX_DISABLE;
-
+	USART2_handle.session = SET;
 	USART_Initization(&USART2_handle);
 }
 
@@ -107,11 +109,15 @@ int main(void)
 //    DMA_Start_IT(&dma_usart_tx, (uint32_t) tx_buff, &usart.pUSARTx->DR);
 //    DMA_Start_IT(&dma_usart_rx, &usart.pUSARTx->DR, (uint32_t) rx_buff);
 
-    StartSerialSession (&USART2_handle, usart_rxLength, &I2C1_handle);
-//    USART_RxData(USART_RX_BUSY);
+//    StartSerialSession (&USART2_handle, usart_rxLength, &I2C1_handle);
 
-//    USART_ReceiveData(&USART2_handle, &I2C1_handle);
-    while (1);
+
+    USART_EnableRxInterrupts();
+
+    while(1) {
+    	SerialRead(&USART2_handle, &I2C1_handle);
+    	HAL_Delay(2000);
+    }
 }
 
 

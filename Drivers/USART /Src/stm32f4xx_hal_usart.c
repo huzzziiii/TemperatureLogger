@@ -73,7 +73,6 @@ USART_State USART_TransmitData(void)
 	{
 		ptrUSARTx->USART_State = USART_TX_BUSY;
 		USART_ENABLE_INTERRUPTS(ptrUSARTx->pUSARTx, USART_CR1_TXEIE | USART_CR1_TCIE);  // set Transmit Data Empty & Transmission Complete control bits
-
 	}
 	return ptrUSARTx->USART_State;
 }
@@ -152,15 +151,14 @@ void USART2_IRQHandler(void)
 	}
 
 	// RXNE
-	if (ptrUSARTx->pUSARTx->SR & USART_SR_RXNE && ptrUSARTx->rxLength)
+	if (ptrUSARTx->pUSARTx->SR & USART_SR_RXNE)
 	{
-		ptrUSARTx->rxBuffer[ptrUSARTx->rxBufferIdx] = ptrUSARTx->pUSARTx->DR;
-		if (ptrUSARTx->rxBuffer[ptrUSARTx->rxBufferIdx++] == '\r')
+		ptrUSARTx->rxBuffer[ptrUSARTx->txIdx] = ptrUSARTx->pUSARTx->DR;
+
+		if(ptrUSARTx->rxBuffer[ptrUSARTx->txIdx++] == '\r')
 		{
 			endLine = true;
 		}
-//		ptrUSARTx->rxBuffer++;
-		ptrUSARTx->rxLength--;
 	}
 
 	if (ptrUSARTx->pUSARTx->SR & USART_SR_TC) // transmission complete
@@ -174,13 +172,33 @@ void USART2_IRQHandler(void)
 		}
 		else if (ptrUSARTx->USART_State == USART_RX_BUSY)
 		{
-			if (!ptrUSARTx->rxLength || endLine)		// if no more bytes to receive OR user keyed in enter
+			if (endLine)
 			{
 				USART_CloseTransmission();
+				ptrUSARTx->TxEndOfLineIdx++;
 			}
 		}
 	}
+	ptrUSARTx->txIdx &= ptrUSARTx->bitMask;
+	ptrUSARTx->rxIdx &= ptrUSARTx->bitMask;
 }
+
+static void USART_CloseTransmission()
+{
+	if (ptrUSARTx->USART_State == USART_RX_BUSY)
+	{
+		//USART_ApplicationCallback(ptrUSARTx);
+//		USART_DISABLE_INTERRUPTS(ptrUSARTx->pUSARTx, USART_CR1_RXNEIE);
+//		ptrUSARTx->rxLength = ptrUSARTx->rxSize;	// restoring the original RX size
+//		ptrUSARTx->rxBufferIdx = 0;
+	}
+	else if (ptrUSARTx->USART_State == USART_TX_BUSY)
+	{
+		USART_DISABLE_INTERRUPTS(ptrUSARTx->pUSARTx, USART_CR1_TXEIE | USART_CR1_TCIE);
+	}
+	ptrUSARTx->USART_State = ptrUSARTx->session ? USART_RX_BUSY : USART_READY;
+}
+
 
 /*
  * @USART_Init: Populates USART struct
@@ -278,22 +296,6 @@ static void UART_DMA_RxCplt(DMA_Handle_t *dmaHandle)
 
 static void UART_DMA_RxError(DMA_Handle_t *dmaHandle) {}
 
-static void USART_CloseTransmission()
-{
-	if (ptrUSARTx->USART_State == USART_RX_BUSY)
-	{
-		//USART_ApplicationCallback(ptrUSARTx);
-		USART_DISABLE_INTERRUPTS(ptrUSARTx->pUSARTx, USART_CR1_RXNEIE);
-		ptrUSARTx->rxLength = ptrUSARTx->rxSize;	// restoring the original RX size
-		ptrUSARTx->rxBufferIdx = 0;
-	}
-	else if (ptrUSARTx->USART_State == USART_TX_BUSY)
-	{
-		USART_DISABLE_INTERRUPTS(ptrUSARTx->pUSARTx, USART_CR1_TXEIE | USART_CR1_TCIE);
-	}
-	ptrUSARTx->USART_State = USART_READY;
-
-}
 
 static void USART_EnableCtrlBits(void)
 {

@@ -112,11 +112,16 @@ typedef struct {
 	uint8_t txLength;
 	uint8_t rxLength;
 	uint8_t rxSize;
-	uint8_t rxBufferIdx;
+	uint8_t bitMask; 	// for circular buffer
+	uint8_t txIdx; 		// produce index
+	uint8_t rxIdx;		// consume index
+	uint8_t TxEndOfLineIdx;
+	uint8_t RxEndOfLineIdx;
 	uint8_t dmaTransfer;
 	uint8_t dmaReception;
 	DMA_Handle_t *dmaRx;
 	DMA_Handle_t *dmaTx;
+	uint8_t session;
 } USART_Handle_t;
 
 
@@ -126,5 +131,8 @@ typedef struct {
 void USART_Initization(USART_Handle_t *pUSART);
 USART_State USART_TransmitData(void);
 USART_State USART_RxData(USART_State desiredState);
+
+//#define USART_BUFFER_EMPTY(RX_IDX, TX_IDX)   RX_IDX == TX_IDX
+#define USART_RX_BUFFER_EMPTY(RX_BUFFER) 	(!strlen(RX_BUFFER))
 
 #endif /* USART__INC_STM32F4XX_HAL_USART_H_ */

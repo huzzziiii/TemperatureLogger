@@ -20,10 +20,13 @@ void SendSerialData(USART_Handle_t *usart, const char *format, ...)
 	usart->txBuffer = serialBuffer;
 	usart->txLength = strlen(serialBuffer);
 
-	while (USART_TransmitData() != USART_READY);
+	USART_State expectedState = usart->session ? USART_RX_BUSY : USART_READY;
+	while (USART_TransmitData() != expectedState);
 
 //	USART_DMA_Transmit(usart, sizeof(serialBuffer));
 //	USART_DMA_Transmit(usartHandle, dmaHandle); //
+	va_end(args);		// clean memory reserved for valist
+//	usart->USART_State = USART_INIT;
 }
 
 /*
@@ -112,34 +115,55 @@ void StartSerialSession (USART_Handle_t *usart, uint8_t rxBufferSize, I2C_Handle
 	}
 }
 
-static I2C_Handle_t *i2cHandle;
-void USART_ReceiveData(USART_Handle_t *usart, I2C_Handle_t *i2c)
+void USART_EnableRxInterrupts()
 {
-	i2cHandle = i2c;
-	USART_RxData(USART_RX_BUSY);
+	(USART_RxData(USART_RX_BUSY));
+//	usart->USART_State = USART_INIT;
 }
 
-void USART_ProcessingRxData(USART_Handle_t *usart)
+// consume circular buffer
+void SerialRead(USART_Handle_t *usart, I2C_Handle_t *I2C_Handle)
 {
-	char tempBuffer[usart->rxSize];
-	memset(tempBuffer, 0, usart->rxSize);
+	char token[usart->rxSize];
+	memset(token, 0, usart->rxSize);
 
-	ParseSerialData(usart, tempBuffer);
-	ExecuteSerialData(usart, tempBuffer, i2cHandle);
+	if (USART_RX_BUFFER_EMPTY(usart->rxBuffer)) {
+		return;
+	}
 
-	// clear out/reset the buffers
-//	usart->rxBuffer = usart_rxBuffer;
-//	memset(usart_rxBuffer, 0, sizeof(rxBufferSize));
-//	memset(tempBuffer, 0, sizeof(tempBuffer));
+	if (!usart->TxEndOfLineIdx) {
+//		SendSerialData(usart, "No data with end-of-line received yet...\r");
+		return;
+	}
 
-	// reset the USART state
-	usart->USART_State = USART_INIT;
+	if (usart->RxEndOfLineIdx == usart->TxEndOfLineIdx) {
+		return;
+	}
+
+	char *dataStart = usart->rxBuffer + usart->rxIdx;
+	char *dataEnd = strstr(dataStart, "\r");
+	uint8_t bytes;
+
+	if (dataEnd == NULL) // wrap-around
+	{
+		char *lastChar = strchr(dataStart, '\0');
+		bytes = lastChar - dataStart;
+		memcpy(token, dataStart, bytes);
+		dataEnd = strstr(usart->rxBuffer, "\r");
+		memcpy(token + bytes, usart->rxBuffer, dataEnd - usart->rxBuffer);
+	}
+	else
+	{
+		bytes = dataEnd - dataStart;
+		memcpy(token, dataStart, bytes);
+	}
+
+	ExecuteSerialData(usart, token, I2C_Handle);
+
+	usart->RxEndOfLineIdx++;
+	usart->rxIdx = usart->txIdx;
 }
 
-void USART_ApplicationCallback(USART_Handle_t *usart)
-{
-	 USART_ProcessingRxData(usart);
-}
 
 
 //void DMA_StartSerialSession(USART_Handle_t *usartHandle, byte bufferSize)
