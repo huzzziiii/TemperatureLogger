@@ -189,17 +189,27 @@ void DMA1_Stream6_IRQHandler(void)
 	DMA_InterruptHandler(&dma_usart_tx);
 }
 
-//
-//void EXTI15_10_IRQHandler(void)
-//{
-//	if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_13))
-//	{
-//		__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_13);
-//		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-//	}
-//
-//
-//}
+void SPI2_IRQHandler(void)
+{
+	HAL_SPI_IRQHandler(nrfRadio.config.spiHandle);
+}
+
+void EXTI9_5_IRQHandler(void)
+{
+	nRF24_IRQHandler(&nrfRadio);
+}
+
+void EXTI15_10_IRQHandler(void)
+{
+	if (__HAL_GPIO_EXTI_GET_IT(GPIO_PIN_13))
+	{
+		__HAL_GPIO_EXTI_CLEAR_IT(GPIO_PIN_13);
+		GPIO_PinState state = HAL_GPIO_ReadPin(GPIOA, GPIO_PIN_5);
+		HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+	}
+}
+
+
 /**
   * @brief This function handles System tick timer.
   */

@@ -19,6 +19,7 @@ OBJCOPY_BIN :=
 SUBDIRS := \
 Drivers/DMA/Src \
 Drivers/I2C/Src \
+Drivers/NRF24L01/Src \
 Drivers/STM32F4xx_HAL_Driver/Src \
 Drivers/USART\ /Src \
 Src \

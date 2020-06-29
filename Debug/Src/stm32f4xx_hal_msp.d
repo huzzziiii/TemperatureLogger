@@ -25,6 +25,7 @@ Src/stm32f4xx_hal_msp.o: ../Src/stm32f4xx_hal_msp.c \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_flash_ramfunc.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h \
+ /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/mcp9808.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/I2C/Inc/stm32f4xx_hal_i2c.h \
  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xe.h \
@@ -33,6 +34,8 @@ Src/stm32f4xx_hal_msp.o: ../Src/stm32f4xx_hal_msp.c \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/DMA/Inc/stm32f4xx_dma.h \
+ /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/NRF24L01/Inc/nrf24l01.h \
+ /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/usart_app.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Third\ party/FreeRTOS/org/Source/include/FreeRTOS.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Config/FreeRTOSConfig.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Third\ party/FreeRTOS/org/Source/include/projdefs.h \
@@ -95,6 +98,8 @@ Src/stm32f4xx_hal_msp.o: ../Src/stm32f4xx_hal_msp.c \
 
 /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pwr_ex.h:
 
+/Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_spi.h:
+
 /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/mcp9808.h:
 
 /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/I2C/Inc/stm32f4xx_hal_i2c.h:
@@ -110,6 +115,10 @@ Src/stm32f4xx_hal_msp.o: ../Src/stm32f4xx_hal_msp.c \
 /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:
 
 /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/DMA/Inc/stm32f4xx_dma.h:
+
+/Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/NRF24L01/Inc/nrf24l01.h:
+
+/Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/usart_app.h:
 
 /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Third\ party/FreeRTOS/org/Source/include/FreeRTOS.h:
 

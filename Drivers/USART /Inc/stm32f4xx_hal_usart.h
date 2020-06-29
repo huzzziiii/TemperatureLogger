@@ -5,12 +5,10 @@
 #define USART__INC_STM32F4XX_HAL_USART_H_
 
 #include <stdint.h>
-//#include <string.h>
 #include "stdbool.h"
 #include "../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h"
 #include "../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h"
 #include "stm32f4xx_dma.h"
-
 
 /*
  * USART mode
@@ -27,6 +25,7 @@ typedef enum {
 	DMA_TX_ENABLE = 1,
 	DMA_RX_ENABLE = 1
 } DMA_ControlBits;
+
 /*
  * Stop bits
  */
@@ -113,8 +112,8 @@ typedef struct {
 	uint8_t rxLength;
 	uint8_t rxSize;
 	uint8_t bitMask; 	// for circular buffer
-	uint8_t txIdx; 		// produce index
-	uint8_t rxIdx;		// consume index
+	uint8_t txIdx; 		// producer index
+	uint8_t rxIdx;		// consumer index
 	uint8_t TxEndOfLineIdx;
 	uint8_t RxEndOfLineIdx;
 	uint8_t dmaTransfer;

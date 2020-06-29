@@ -86,6 +86,7 @@
 #define HAL_PWR_MODULE_ENABLED
 #define HAL_CORTEX_MODULE_ENABLED
 #define USART_APP_MODULE_ENABLED
+#define HAL_SPI_MODULE_ENABLED
 
 /* ########################## HSE/HSI Values adaptation ##################### */
 /**

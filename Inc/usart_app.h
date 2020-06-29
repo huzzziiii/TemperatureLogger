@@ -19,6 +19,6 @@ void USART_ApplicationCallback(USART_Handle_t *usart);
 
 void USART_Init(void);
 
-
+extern USART_Handle_t USART2_handle;
 
 #endif

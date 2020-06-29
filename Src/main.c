@@ -13,11 +13,20 @@
 #include "main.h"
 
 USART_Handle_t USART2_handle;
-I2C_Handle_t I2C1_handle;
+static I2C_Handle_t I2C1_handle;
+static SPI_HandleTypeDef SPI_handle;
+nrfl2401 nrfRadio;
 DMA_Handle_t dma_usart_rx, dma_usart_tx;
 
+/* defining buffer for RX payload for nRF24l01 */
+static uint8_t nRF24l01_rxBuffer[10];
+#define NRF_PAYLOAD_WIDTH			0x5
+#define NRF_PTX_DEVICES(_ADDRESS_) (_ADDRESS_/NRF_PAYLOAD_WIDTH)
+#define	ptxDevicesUsed	0x1
+
+
 /* defining buffer for USART */
-char usart_fifo[9] = {0};
+static char usart_fifo[9];
 uint8_t usart_rxLength = sizeof(usart_fifo)/sizeof(usart_fifo[0]);
 
 /* Private function prototypes -----------------------------------------------*/
@@ -59,6 +68,21 @@ void USART_Init (void)
 	USART_EnableRxInterrupts();
 }
 
+void SPI_Init(SPI_InitTypeDef *SPI_Config, SPI_TypeDef *SPIx)
+{
+	SPI_handle.Instance = SPIx;
+	SPI_handle.Init = *SPI_Config;
+
+	__HAL_RCC_SPI2_CLK_ENABLE();
+	HAL_SPI_Init(&SPI_handle);
+}
+
+void nRF24_Init(nrfl2401_Config *radioConfig)
+{
+	nrfRadio.config = *radioConfig;
+	nRF24_Initialization(&nrfRadio);
+}
+
 void DMA_Init(DMA_Handle_t *dmaHandle, DMA_Stream_TypeDef *stream, byte transferDirection)
 {
 	dmaHandle->DMAx = DMA1;
@@ -80,8 +104,19 @@ void DMA_Init(DMA_Handle_t *dmaHandle, DMA_Stream_TypeDef *stream, byte transfer
   * @brief  The application entry point.
   * @retval int
   */
+
+//#define PRI_UINT64_C_Val(value) (((unsigned long) (value>>32)) | ((unsigned long)value & 0xFFFFFFFF))
+//#define PRI_UINT64_C_Val(value) (((unsigned long) (value & 0xFFFFFFFF00000000) | ((unsigned long)value & 0xFFFFFFFF)))
+
+#define PRI_UINT64_C_Val(value) ((unsigned long) (value>>32)), ((unsigned long)value)
+#define PRI_UINT64 "%lx%lx"
+
+
 int main(void)
 {
+	printf ("--- welcome ---\n");
+
+	//uint64_t arr = PRI_UINT64_C_Val(0x05000030abcd1234);
 	HAL_Init();
 
 	/* Configure the system clock */
@@ -102,6 +137,21 @@ int main(void)
     /* Initialize USART struct */
     USART_Init();
 
+    /* Initialize SPI struct */
+    SPI_InitTypeDef spi_config = {
+    		Mode: SPI_MODE_MASTER,
+			Direction: SPI_DIRECTION_2LINES,			// full duplex
+			DataSize: SPI_DATASIZE_8BIT,
+			CLKPolarity: SPI_POLARITY_LOW,
+			CLKPhase: SPI_PHASE_1EDGE,
+			NSS: SPI_NSS_HARD_OUTPUT,
+			BaudRatePrescaler: SPI_BAUDRATEPRESCALER_8, // 16MHz/8 <= 2MHz (radio module=10MHz)
+			FirstBit: SPI_FIRSTBIT_MSB,
+			TIMode: SPI_TIMODE_DISABLE,
+			CRCCalculation: SPI_CRCCALCULATION_DISABLE,
+			CRCPolynomial: 7
+    };
+    SPI_Init(&spi_config, SPI2);
 
     /* Initialize DMA struct */
 //    DMA_Init(&dma_usart_tx, DMA_UART_TX_STREAM, MEMORY_TO_PERIPHERAL);
@@ -112,6 +162,44 @@ int main(void)
 
 //    DMA_Start_IT(&dma_usart_tx, (uint32_t) tx_buff, &usart.pUSARTx->DR);
 //    DMA_Start_IT(&dma_usart_rx, &usart.pUSARTx->DR, (uint32_t) rx_buff);
+
+
+    uint8_t primaryTxAddresses[5] = {0xd7, 0xd7, 0xd7, 0xd7, 0xd7};
+
+    uint8_t primaryTx[1][5] = { {0xd7, 0xd7, 0xd7, 0xd7, 0xd7} };
+
+    uint8_t rxPayloadWidths[ptxDevicesUsed] = {1};						// payload widths for respective data pipes
+
+    nrfl2401_Config radioConfig = {
+			enableRxDataPipes: (& (uint8_t ) {DATA_PIPE_0}),
+			addressFieldWidth: nRF24_FIVE_BYTES,
+			addressWidth: 5,
+			rfChannel: 0,
+			dataRate: nRF24_RF_DR_HIGH(nRF24_SPEED_2MBPS),
+			rxPayloadWidths: rxPayloadWidths,
+			disableAutoAck: ((uint8_t []) {1, DATA_PIPE_0}), // by default, auto ACK is enabled for all the data pipes - note: the first element represents the size, and from second onwards is data pipes
+    		txDevicesUsed: NRF_PTX_DEVICES(5),
+			txAddress: primaryTxAddresses,
+			txAddressesList: primaryTx,
+
+    		spiHandle: &SPI_handle
+    };
+    nRF24_Init(&radioConfig);
+
+//    nRF24_ReadPayload(&nrfRadio);
+
+    nRF24_TransmitPayload(&nrfRadio, (uint8_t []) {'E'});
+
+    nRF24_TransmitPayload(&nrfRadio, (uint8_t []) {15});
+
+    nRF24_TransmitPayload(&nrfRadio, (uint8_t []) {'A'});
+
+    nRF24_TransmitPayload(&nrfRadio, (uint8_t []) {'D'});
+
+    nRF24_TransmitPayload(&nrfRadio, (uint8_t []) {'1'});
+
+
+    while(1);
 
     while(1)
     {
@@ -178,6 +266,32 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();			// Push button (PC13)
   __HAL_RCC_GPIOA_CLK_ENABLE();			// LED (PA5)
   __HAL_RCC_GPIOB_CLK_ENABLE();			// I2C1
+  __HAL_RCC_GPIOD_CLK_ENABLE();			// SPI2
+
+	/* LED/Push button config */
+
+	// Configure GPIO pin : PC13 [PUSH BUTTON]
+	gpio.Pin = GPIO_PIN_13;
+	gpio.Mode = GPIO_MODE_IT_FALLING;
+	gpio.Pull = GPIO_NOPULL;
+	HAL_GPIO_Init(GPIOC, &gpio);
+
+	// Configure GPIO pin : PA5  		// LED
+	gpio.Pin = GPIO_PIN_5;
+	gpio.Mode = GPIO_MODE_OUTPUT_PP;
+	gpio.Pull = GPIO_NOPULL;
+	gpio.Speed = GPIO_SPEED_FREQ_LOW;
+	HAL_GPIO_Init(GPIOA, &gpio);
+	HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+
+	/* Configure SPI */
+	nRF24_GPIO_Init(&gpio);
+
+//	gpio.Pin = GPIO_PIN_13;
+//	HAL_GPIO_Init(GPIOB, &gpio);
+//	HAL_GPIO_TogglePin(GPIOB, GPIO_PIN_13);
+//	  HAL_GPIO_WritePin(GPIOB, GPIO_PIN_10, GPIO_PIN_RESET);
+
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, GPIO_PIN_6, GPIO_PIN_RESET);
@@ -185,33 +299,17 @@ static void MX_GPIO_Init(void)
 	/* USART config */
 	gpio.Mode = GPIO_MODE_AF_PP;
 	gpio.Pin = GPIO_PIN_2 | GPIO_PIN_3;
-	gpio.Pull = GPIO_PULLUP;
+	gpio.Pull = GPIO_PULLUP;				// idle state is HIGH
 	gpio.Alternate = GPIO_AF7_USART2;
 	HAL_GPIO_Init(GPIOA, &gpio);
 
 	HAL_NVIC_EnableIRQ(USART2_IRQn);
 
-	/* LED/Push button config */
-
-	// Configure GPIO pin : PC13 // PUSH BUTTON
-	gpio.Pin = GPIO_PIN_13;
-	gpio.Mode = GPIO_MODE_IT_RISING;
-	gpio.Pull = GPIO_NOPULL;
-	HAL_GPIO_Init(GPIOC, &gpio);
-
-	// Configure GPIO pin : PA5  // LED
-	gpio.Pin = GPIO_PIN_5;
-	gpio.Mode = GPIO_MODE_OUTPUT_PP;
-	gpio.Pull = GPIO_NOPULL;
-	gpio.Speed = GPIO_SPEED_FREQ_LOW;
-	HAL_GPIO_Init(GPIOA, &gpio);
-
-	// Configure I2C
+	/* Configure I2C */
 	gpio.Mode = GPIO_MODE_AF_OD;
 	gpio.Pull = GPIO_NOPULL;
 	gpio.Speed = GPIO_SPEED_FREQ_HIGH;
 	gpio.Alternate = GPIO_AF4_I2C1;
-
 
 	// scl
 	gpio.Pin = GPIO_PIN_6;
@@ -225,9 +323,13 @@ static void MX_GPIO_Init(void)
 	HAL_NVIC_SetPriority(EXTI15_10_IRQn, 0, 0);
 	HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 
-	/* EXTI I2C Interrupts */
+	/* I2C Interrupts */
 	HAL_NVIC_EnableIRQ(I2C1_EV_IRQn);
 	HAL_NVIC_EnableIRQ(I2C1_ER_IRQn);
+
+	/* SPI Interrupt */
+	HAL_NVIC_EnableIRQ(SPI2_IRQn);
+
 
 //	/* EXTI DMA interrupt */ -- todo remove
 	HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);

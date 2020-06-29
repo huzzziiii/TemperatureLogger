@@ -12,7 +12,9 @@
  */
 void SendSerialData(USART_Handle_t *usart, const char *format, ...)
 {
-	char serialBuffer[strlen(format)];
+	size_t size = strlen(format);
+//	char serialBuffer[strlen(format)] = {0};
+	char serialBuffer[100] = {0};
 	va_list args;
 	va_start(args, format);
 	vsprintf(serialBuffer, format, args);
@@ -47,9 +49,6 @@ void ReceiveSerialData(USART_Handle_t *usart)
  */
 void ParseSerialData(USART_Handle_t *usart, char *tempBuffer) // hello\r\world\r
 {
-//	char *start = rxBuffer;
-//	char *end = strstr(rxBuffer, "\r");
-
 	char *start = usart->rxBuffer;
 	char *end = strstr(start, "\r");
 	uint8_t bytes = end - start;

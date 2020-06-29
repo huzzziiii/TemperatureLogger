@@ -12,6 +12,7 @@ RM := rm -rf
 -include Src/subdir.mk
 -include Drivers/USART\ /Src/subdir.mk
 -include Drivers/STM32F4xx_HAL_Driver/Src/subdir.mk
+-include Drivers/NRF24L01/Src/subdir.mk
 -include Drivers/I2C/Src/subdir.mk
 -include Drivers/DMA/Src/subdir.mk
 -include subdir.mk

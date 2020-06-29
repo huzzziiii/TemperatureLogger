@@ -27,16 +27,19 @@
 extern "C" {
 #endif
 
+//extern nrfl2401 nrfRadio;
+
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
 #include "mcp9808.h"
 #include "usart_app.h"
-//#include "stm32f4xx_dma.h"
+#include "nrf24l01.h"
 #include "FreeRTOS.h"
 #include "task.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
 
 
 /* Private includes ----------------------------------------------------------*/
