@@ -4,6 +4,7 @@
 
 #include "stm32f4xx_hal_usart.h"
 #include "mcp9808.h"
+#include "nrf24l01.h"
 #include <stdarg.h>
 #include <string.h>
 #include <stdlib.h>

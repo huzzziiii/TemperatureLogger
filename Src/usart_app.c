@@ -64,10 +64,14 @@ void ParseSerialData(USART_Handle_t *usart, char *tempBuffer) // hello\r\world\r
  */
 bool ExecuteSerialData(USART_Handle_t *usart, const char *str1, I2C_Handle_t *I2C_Handle)
 {
+	unsigned char payload[10] = {0};
 	if (!strcmp(str1, "temp"))
 	{
 		uint16_t temp = GetTemperature(SET, I2C_Handle);
 		SendSerialData(usart, "Current temperature: %d\n", temp);
+		sprintf (payload, "%u", temp);							// todo - verify signedness
+	    nRF24_TransmitPayload(&nrfRadio, payload, 2);
+
 	}
 	else if (!strcmp(str1, "led"))
 	{
@@ -78,6 +82,11 @@ bool ExecuteSerialData(USART_Handle_t *usart, const char *str1, I2C_Handle_t *I2
 	{
 		SendSerialData(usart, "No longer accepting serial data...\n");
 		return false;
+	}
+	else if (!strcmp(str1, "stop"))
+	{
+		sprintf (payload, "%s", str1);
+	    nRF24_TransmitPayload(&nrfRadio, payload, strlen(str1)+1);
 	}
 	return true;
 }

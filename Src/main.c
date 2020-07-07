@@ -12,6 +12,7 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 
+
 USART_Handle_t USART2_handle;
 static I2C_Handle_t I2C1_handle;
 static SPI_HandleTypeDef SPI_handle;
@@ -32,6 +33,11 @@ uint8_t usart_rxLength = sizeof(usart_fifo)/sizeof(usart_fifo[0]);
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
+
+// NRF params
+static uint8_t primaryTxAddresses[5] = {0xd7, 0xd7, 0xd7, 0xd7, 0xd7};
+static uint8_t primaryTx[1][5] = { {0xd7, 0xd7, 0xd7, 0xd7, 0xd7} };
+static uint8_t rxPayloadWidths[ptxDevicesUsed] = {3};	// payload widths for respective data pipes
 
 /*
  * Initializes user-defined variables for I2C struct
@@ -105,18 +111,8 @@ void DMA_Init(DMA_Handle_t *dmaHandle, DMA_Stream_TypeDef *stream, byte transfer
   * @retval int
   */
 
-//#define PRI_UINT64_C_Val(value) (((unsigned long) (value>>32)) | ((unsigned long)value & 0xFFFFFFFF))
-//#define PRI_UINT64_C_Val(value) (((unsigned long) (value & 0xFFFFFFFF00000000) | ((unsigned long)value & 0xFFFFFFFF)))
-
-#define PRI_UINT64_C_Val(value) ((unsigned long) (value>>32)), ((unsigned long)value)
-#define PRI_UINT64 "%lx%lx"
-
-
 int main(void)
 {
-	printf ("--- welcome ---\n");
-
-	//uint64_t arr = PRI_UINT64_C_Val(0x05000030abcd1234);
 	HAL_Init();
 
 	/* Configure the system clock */
@@ -163,21 +159,16 @@ int main(void)
 //    DMA_Start_IT(&dma_usart_tx, (uint32_t) tx_buff, &usart.pUSARTx->DR);
 //    DMA_Start_IT(&dma_usart_rx, &usart.pUSARTx->DR, (uint32_t) rx_buff);
 
-
-    uint8_t primaryTxAddresses[5] = {0xd7, 0xd7, 0xd7, 0xd7, 0xd7};
-
-    uint8_t primaryTx[1][5] = { {0xd7, 0xd7, 0xd7, 0xd7, 0xd7} };
-
-    uint8_t rxPayloadWidths[ptxDevicesUsed] = {1};						// payload widths for respective data pipes
-
     nrfl2401_Config radioConfig = {
-			enableRxDataPipes: (& (uint8_t ) {DATA_PIPE_0}),
+			enableRxDataPipes: ( (uint8_t []) {DATA_PIPE_0}),
 			addressFieldWidth: nRF24_FIVE_BYTES,
 			addressWidth: 5,
 			rfChannel: 0,
 			dataRate: nRF24_RF_DR_HIGH(nRF24_SPEED_2MBPS),
 			rxPayloadWidths: rxPayloadWidths,
-			disableAutoAck: ((uint8_t []) {1, DATA_PIPE_0}), // by default, auto ACK is enabled for all the data pipes - note: the first element represents the size, and from second onwards is data pipes
+			enableDynamicPayload: ENABLE,
+			enablePayloadkWithAck: RESET,
+			disableAutoAck: ((uint8_t []) {0, DATA_PIPE_0}), // by default, auto ACK is enabled for all the data pipes - note: the first element represents the size, and from second onwards is data pipes
     		txDevicesUsed: NRF_PTX_DEVICES(5),
 			txAddress: primaryTxAddresses,
 			txAddressesList: primaryTx,
@@ -186,33 +177,19 @@ int main(void)
     };
     nRF24_Init(&radioConfig);
 
-//    nRF24_ReadPayload(&nrfRadio);
-
-    nRF24_TransmitPayload(&nrfRadio, (uint8_t []) {'E'});
-
-    nRF24_TransmitPayload(&nrfRadio, (uint8_t []) {15});
-
-    nRF24_TransmitPayload(&nrfRadio, (uint8_t []) {'A'});
-
-    nRF24_TransmitPayload(&nrfRadio, (uint8_t []) {'D'});
-
-    nRF24_TransmitPayload(&nrfRadio, (uint8_t []) {'1'});
-
-
-    while(1);
-
     while(1)
     {
     	uint8_t readFifo = USART_READ_FIFO(USART2_handle.rxBuffer,
     									   USART2_handle.TxEndOfLineIdx,
 										   USART2_handle.RxEndOfLineIdx);
+
+    	// read only when there's "\r" (return key) in the user input
     	if (readFifo)
     	{
     		SerialRead(&USART2_handle, &I2C1_handle);
     	}
     }
 }
-
 
 
 /**

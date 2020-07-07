@@ -32,7 +32,8 @@ Src/usart_app.o: ../Src/usart_app.c \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/DMA/Inc/stm32f4xx_dma.h \
  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f401xe.h \
  /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/mcp9808.h \
- /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/I2C/Inc/stm32f4xx_hal_i2c.h
+ /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/I2C/Inc/stm32f4xx_hal_i2c.h \
+ /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/NRF24L01/Inc/nrf24l01.h
 
 /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/usart_app.h:
 
@@ -101,3 +102,5 @@ Src/usart_app.o: ../Src/usart_app.c \
 /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Inc/mcp9808.h:
 
 /Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/I2C/Inc/stm32f4xx_hal_i2c.h:
+
+/Users/huzaifaasif/STM32CubeIDE/workspace_1.0.2/TemperatureLogger/Drivers/NRF24L01/Inc/nrf24l01.h:

@@ -42,6 +42,10 @@ extern "C" {
 
 
 
+#define PRI_UINT64_C_Val(value) ((unsigned long) (value>>32)), ((unsigned long)value)
+#define PRI_UINT64 "%lx%lx"
+
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 

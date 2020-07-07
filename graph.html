@@ -1,0 +1,132 @@
+
+<html>
+<head>
+<title>My first chart using FusionCharts Suite XT</title>
+<!-- Include fusioncharts core library -->
+<script type="text/javascript" src="https://cdn.fusioncharts.com/fusioncharts/latest/fusioncharts.js"></script>
+<!-- Include fusion theme -->
+<script type="text/javascript" src="https://cdn.fusioncharts.com/fusioncharts/latest/themes/fusioncharts.theme.fusion.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-1.7.1.min.js"></script>
+
+<script src="parser.js"></script>
+<script type="text/javascript">
+
+    var csvData;
+    var url = "data.csv"
+    var jsonObject;                                                     // CSV file reference
+    var curLine = 1;                                                    // stores the current line being read from the CSV
+    var endLine;                                                        // stores the last line that contains the latest sample in CSV
+    var currentContentLength = 0;                                       // stores the content of the file being read
+    var previousContentLength = 0;                                      // stores the content of the file prior to loading a next one
+
+    //STEP 2 - Chart Data
+    // Define the categories representing the labels on the X-axis
+    const categories =  [{
+        "category": [{
+            "label": "Day Start"
+        }]
+    }];
+    // Construct the dataset comprising multiple series
+    const dataset = [{
+        "data": [{
+            "value": "0"
+        }]
+    }];
+
+    //STEP 3 - Chart Configurations
+    var chartConfigurations = {
+      id: "TemperatureLogging",
+      type: 'realtimeline',
+      renderAt: 'chart-container',
+      width: '700',
+      height: '400',
+      dataFormat: 'json',
+      dataSource: {
+        "chart": {
+          "theme": "fusion",
+          "caption": "Real-time temperature monitoring",
+          "subCaption": "",
+          "xAxisName": "Time",
+          "yAxisName": "Temperature (Celcius)",
+          "numberPrefix": "$",
+          "refreshinterval": "2",
+          "yaxisminvalue": "35",
+          "yaxismaxvalue": "36",
+          "numdisplaysets": "10",
+          "labeldisplay": "rotate",
+          "showRealTimeValue": "0"
+        },
+        "categories": categories,
+        "dataset": dataset
+      },
+      "events": {
+        "initialized": function(e) {
+          function addLeadingZero(num) {
+            return (num <= 9) ? ("0" + num) : num;
+          }
+
+          function readFileSize() {
+            var request = new XMLHttpRequest();
+            request.open("HEAD", url, false);                         // no need to read the body of the file here
+            request.send(null);
+            currentContentLength = request.getResponseHeader("content-length");
+            console.log("HEADERS: " + request.getAllResponseHeaders());
+            console.log("Current csv file size: " + currentContentLength + ", Previous csv file size: " + previousContentLength);
+            console.log("Current line: " + curLine + ", End line: " + endLine)
+
+            if (currentContentLength != previousContentLength) {      // populate the graph only when there's new data in the CSV
+              updateData();
+            }
+          }
+
+          function updateData() {
+            console.log("------> Updating data...");
+            var request = new XMLHttpRequest();
+            request.open("GET", url, false);
+            request.send(null);
+
+            // Retrieve data from csv file content
+            var jsonObject = request.responseText.split(/\r?\n|\r/);
+            endLine = jsonObject.length - 2;
+            console.log("Entire CSV: " + jsonObject)
+
+            for (; curLine < endLine; curLine++)
+            {
+              var chartRef = FusionCharts("TemperatureLogging"),
+                             currDate = new Date(),
+                             label = addLeadingZero(currDate.getHours()) + ":" +
+                                     addLeadingZero(currDate.getMinutes()) + ":" +
+                                     addLeadingZero(currDate.getSeconds()),
+                                     sample = jsonObject[curLine]
+
+              strData = "&label=" + label + "&value=" + sample;
+
+              // Feed it to chart
+              chartRef.feedData(strData);
+
+              console.log("First elem: " + jsonObject[curLine] + ", Last elem: " + jsonObject[endLine])
+              console.log("Current line: " + curLine + ", End line: " + endLine);
+              console.log("String data: " + strData);
+            }
+            previousContentLength = currentContentLength;
+          }
+
+          setInterval(function() {
+            readFileSize();
+          }, 1000);
+
+        }
+      }
+    }
+
+    FusionCharts.ready(function(){
+        var fusioncharts = new FusionCharts(chartConfigurations);
+    fusioncharts.render();
+    });
+
+</script>
+</head>
+<body>
+<div id="chart-container">FusionCharts XT will load here!</div>
+</body>
+</html>
