@@ -11,6 +11,11 @@
 #ifndef NRF24L01_INC_NRF24L01_H_
 #define NRF24L01_INC_NRF24L01_H_
 
+#define PRI_UINT64_C_Val(value) ((unsigned long) (value>>32)), ((unsigned long)value)
+#define PRI_UINT64 "%lx%lx"
+#define LONG_TO_STR(STR, LONG_VAL) (sprintf(STR, "%lx%lx", PRI_UINT64_C_Val(LONG_VAL)))
+
+
 //extern struct nrfl2401RadioModule nrfRadio;
 
 extern struct nrfl2401RadioModule nrfRadio;
@@ -24,6 +29,7 @@ extern struct nrfl2401RadioModule nrfRadio;
 #define nRF24_CMD_W_PAYLOAD			(uint8_t) 0xA0
 #define nRF24_CMD_R_RX_PL_WID		(uint8_t) 0x60
 #define nRF24_CMD_FLUSH_TX			(uint8_t) 0xE1
+#define nRF24_CMD_FLUSH_RX			(uint8_t) 0xE2
 #define nRF24_CMD_NOP				(uint8_t) 0xFF
 
 // register definitions
@@ -69,7 +75,7 @@ extern struct nrfl2401RadioModule nrfRadio;
 //#define nRF24_FLAG_MAX_RT          	(uint8_t) 0x10 // MAX_RT bit (maximum number of TX retransmits interrupt)
 
 #define nRF24_DEFAULT_STATUS_REG	(uint8_t) 0x0E 	// TODO - rmv
-
+#define nRF24_MAX_FIFO_BYTES		(uint8_t) 32
 // Config register bit positions
 //#define nRF24_MASK_RX_DR			(uint8_t) 1 << 6
 //#define nRF24_MASK_TX_DS			(uint8_t) 1 << 5
@@ -260,9 +266,21 @@ typedef struct nrfl2401RadioModule
 
 
 // function declarations
-//void nRF24_GPIO_Init(void);
+void nRF24_GPIO_Init(GPIO_InitTypeDef *gpioPort);
 NRF_STATUS nRF24_Initialization(nrfl2401 *nrf);
 NRF_STATUS nRF24_TransmitPayload(nrfl2401 *nrf, uint8_t *data, uint8_t size);
+NRF_STATUS nRF24_WriteRegister(nrfl2401 *nrf, uint8_t reg, uint8_t *data, const uint8_t txSize, char *text);
+
+void nRF24_DisableAutoAck(nrfl2401 *nrf);
+void nRF24_ReadFifo(nrfl2401 *nrf, uint8_t readBuffer[]);
+void nRF24_TxCallback(nrfl2401 *nrfRadio);
+NRF_STATUS nRF24_ReadPayload(nrfl2401 *nrf);
+void nRF24_EnablePayloadWithAck(nrfl2401 *nrf);
+void nRF24_SetConfigureRegister(nrfl2401 *nrf, NRF_ConfigRegBits configRegBit, NRF_FLAG setFlag);
+
+
+
+
 
 //NRF_STATUS nRF24_TransmitPayload(nrfl2401 *nrf);
 //NRF_STATUS nRF24_ReceivePayload(nrfl2401 *nrf);
