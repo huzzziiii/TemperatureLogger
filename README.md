@@ -10,3 +10,8 @@ A simple data logger that reads the user commands over UART, and sends the desir
 | ------------- |:-------------:| 
 | temp     | outputs the current temperature value to the terminal and populates the graph on the receiving-end with the data
 | led  | triggers the LED on the uC (trivial)     
+
+## g++ command to run the receiver program:
+```
+g++ -lrf24 receiver.cpp -o run
+./run```
