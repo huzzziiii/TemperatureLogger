@@ -14,4 +14,4 @@ A simple data logger that reads the user commands over UART, and if temp is rece
 ## g++ command to run the receiver program:
 ```
 g++ -lrf24 receiver.cpp -o run
-./run```
+./run
