@@ -1,7 +1,7 @@
 # TemperatureLogger
 
 ## Summary
-A simple data logger that reads the user commands over UART, and sends the desired sensor's data over to the receiver module over the air that's hooked to a Raspberry Pi where graph of the data is generated in real-time.
+A simple data logger that reads the user commands over UART, and if temp is received, the apps sends the temperature sensor's data over to the nRF2401 receiver module over the air that's hooked to a Raspberry Pi where graph is populated is in real-time.
 
 ## Supported terminal commands so far:
 
